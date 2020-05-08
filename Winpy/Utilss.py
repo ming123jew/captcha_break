@@ -9,6 +9,7 @@ from tqdm import tqdm
 import random
 import numpy as np
 from collections import OrderedDict
+from PIL import Image
 
 
 
@@ -38,7 +39,7 @@ def train(model, optimizer, epoch, dataloader,characters):
     acc_mean = 0
     with tqdm(dataloader) as pbar:
         for batch_index, (data, target, input_lengths, target_lengths) in enumerate(pbar):
-            data, target = data.cuda(), target.cuda()
+            data, target = data.cpu(), target.cpu()
             
             optimizer.zero_grad()
             output = model(data)
@@ -67,7 +68,7 @@ def valid(model, optimizer, epoch, dataloader,characters):
         loss_sum = 0
         acc_sum = 0
         for batch_index, (data, target, input_lengths, target_lengths) in enumerate(pbar):
-            data, target = data.cuda(), target.cuda()
+            data, target = data.cpu(), target.cpu()
             
             output = model(data)
             output_log_softmax = F.log_softmax(output, dim=-1)
@@ -84,3 +85,14 @@ def valid(model, optimizer, epoch, dataloader,characters):
             
             pbar.set_description(f'Test : {epoch} Loss: {loss_mean:.4f} Acc: {acc_mean:.4f} ')
     
+def print_log(fuc,line,**kwargs):
+    print('#'*3 + ' debug-start:', fuc, "-> print line:"+str(line), '#'*3 )
+    for item in kwargs:
+        print(" "*3, "==>"+str(item)+':', kwargs[item])
+    print('#' * 3 + 'debug-end:', fuc, "-> print line:" + str(line), '#' * 3)
+    print("\n")
+
+def pil_loader(path):
+    with open(path, 'rb') as f:
+        with Image.open(f) as img:
+            return img.convert('RGB')

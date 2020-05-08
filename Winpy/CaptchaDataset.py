@@ -29,6 +29,10 @@ class CaptchaDataset(Dataset):
         random_str = ''.join([random.choice(self.characters[1:]) for j in range(self.label_length)])
         image = to_tensor(self.generator.generate_image(random_str))
         target = torch.tensor([self.characters.find(x) for x in random_str], dtype=torch.long)
+        print(random_str)
+        print([self.characters.find(x) for x in random_str])
+        print(target)
+        exit(0)
         input_length = torch.full(size=(1, ), fill_value=self.input_length, dtype=torch.long)
         target_length = torch.full(size=(1, ), fill_value=self.label_length, dtype=torch.long)
         return image, target, input_length, target_length

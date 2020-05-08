@@ -11,21 +11,32 @@ import numpy as np
 from collections import OrderedDict
 
 import string
+import sys
 
 from CaptchaDataset import CaptchaDataset
 from Model import Model
 from Utilss import train
 from Utilss import valid
 
+DEBUG = True
+def print_log(fuc,line,**kwargs):
+    print('#'*3 + ' debug-start:', fuc, "-> print line:"+str(line), '#'*3 )
+    for item in kwargs:
+        print(" "*3, " ==> "+str(item)+':', kwargs[item])
+    print('#' * 3 + 'debug-end:', fuc, "-> print line:" + str(line), '#' * 3)
+    print("\n")
+
 characters = '-' + string.digits + string.ascii_uppercase
 width, height, n_len, n_classes = 192, 64, 4, len(characters)#192 64
 n_input_length = 12
-print(characters, width, height, n_len, n_classes)
+
+print_log(sys._getframe().f_code, sys._getframe().f_lineno, characters=characters,width=width,height=height,n_len=n_len,n_classes=n_classes) if DEBUG is True else None
 
 
 dataset = CaptchaDataset(characters, 1, width, height, n_input_length, n_len)
 image, target, input_length, label_length = dataset[0]
-print(''.join([characters[x] for x in target]), input_length, label_length)
+print_log(sys._getframe().f_code, sys._getframe().f_lineno, code = ''.join([characters[x] for x in target]), input_length=input_length, label_length=label_length, image=image, target=target) if DEBUG is True else None
+
 to_pil_image(image)
 
 
@@ -44,7 +55,7 @@ outputs = model(inputs)
 outputs.shape
 
 model = Model(n_classes, input_shape=(3, height, width))
-model = model.cuda()
+model = model.cpu()
 model
 
 def decode(sequence):
@@ -83,7 +94,7 @@ if __name__=='__main__':
     
     
     model.eval()
-    output = model(image.unsqueeze(0).cuda())
+    output = model(image.unsqueeze(0).cpu())
     output_argmax = output.detach().permute(1, 0, 2).argmax(dim=-1)
     do = True
     while do or decode_target(target) == decode(output_argmax[0]):
@@ -91,7 +102,7 @@ if __name__=='__main__':
         image, target, input_length, label_length = dataset[0]
         print('true:', decode_target(target))
 
-        output = model(image.unsqueeze(0).cuda())
+        output = model(image.unsqueeze(0).cpu())
         output_argmax = output.detach().permute(1, 0, 2).argmax(dim=-1)
         print('pred:', decode(output_argmax[0]))
     to_pil_image(image)
